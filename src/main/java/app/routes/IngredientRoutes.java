@@ -12,9 +12,10 @@ public class IngredientRoutes {
 
     public EndpointGroup getRoutes() {
         return () -> {
-                get("/", ingredientController::readAll);
-                get("/{id}", ingredientController::read);
-
+                // GET endpoints er public (ingen authentication påkrævet)
+                get("/", ingredientController::readAll, Role.ANYONE);
+                get("/{id}", ingredientController::read, Role.ANYONE);
+                // Write endpoints kræver authentication med Role.USER
                 post("/", ingredientController::create, Role.USER);
                 put("/{id}", ingredientController::update, Role.USER);
                 delete("/{id}", ingredientController::delete, Role.USER);

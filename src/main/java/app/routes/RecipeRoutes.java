@@ -12,9 +12,10 @@ public class RecipeRoutes {
 
     public EndpointGroup getRoutes() {
         return () -> {
-                get("/", recipeController::readAll);
-                get("/{id}", recipeController::read);
-
+                // GET endpoints er public (ingen authentication påkrævet)
+                get("/", recipeController::readAll, Role.ANYONE);
+                get("/{id}", recipeController::read, Role.ANYONE);
+                // Write endpoints kræver authentication med Role.USER
                 post("/", recipeController::create, Role.USER);
                 put("/{id}", recipeController::update, Role.USER);
                 delete("/{id}", recipeController::delete, Role.USER);

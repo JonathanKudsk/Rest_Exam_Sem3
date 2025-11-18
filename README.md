@@ -346,13 +346,13 @@ The system initializes with sample data via `RecipePopulator` on startup:
 
 ## Authentication
 
-**GET endpoints are public** (no authentication required):
+**GET endpoints are public** (explicitly marked with `Role.ANYONE` - no authentication required):
 - `GET /api/recipes`
 - `GET /api/recipes/{id}`
 - `GET /api/ingredients`
 - `GET /api/ingredients/{id}`
 
-**All write endpoints require authentication** (POST, PUT, DELETE). Include the JWT token in the Authorization header:
+**All write endpoints require authentication** (POST, PUT, DELETE - marked with `Role.USER`). Include the JWT token in the Authorization header:
 
 ```
 Authorization: Bearer {token}
@@ -401,8 +401,8 @@ src/main/java/app/
 
 - Recipe deletion cascades to RecipeIngredient entities (orphanRemoval = true)
 - Ingredient deletion cascades to RecipeIngredient entities (orphanRemoval = true)
-- GET endpoints (read operations) are public - no authentication required
-- Write endpoints (POST, PUT, DELETE) require USER role authentication
+- GET endpoints (read operations) are explicitly marked with `Role.ANYONE` - no authentication required
+- Write endpoints (POST, PUT, DELETE) are explicitly marked with `Role.USER` - authentication required
 - Recipe categories: BREAKFAST, LUNCH, DINNER, DESSERT, SNACK
 - Ingredient types: VEGETABLE, OIL, DAIRY, PROTEIN, SEASONING, GRAIN, SWEETENER, FRUIT, HERB, CONDIMENT, BAKING
 - Nutrition data is automatically enriched from external API when fetching recipes by ID

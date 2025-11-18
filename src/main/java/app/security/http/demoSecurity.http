@@ -1,0 +1,48 @@
+### Health check endpoint (public - no auth required)
+GET {{url}}/auth/healthcheck
+
+### A simple get request to the test endpoint. No need for login
+GET {{url}}/auth/test
+
+### Create a new user - this one will only get a USER role by default
+POST {{url}}/auth/register
+
+{
+    "username": "user",
+    "password": "test123"
+}
+
+### Login
+POST {{url}}/auth/login
+
+{
+    "username": "user",
+    "password": "test123"
+}
+
+> {%
+    client.global.set("jwt_token", response.body.token);
+    console.log("JWT Token:", client.global.get("jwt_token"));
+%}
+
+### Add admin role to user
+POST {{url}}/auth/user/role
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "role": "admin"
+}
+
+### Login as admin
+POST {{url}}/auth/login
+
+{
+    "username": "user",
+    "password": "test123"
+}
+
+> {%
+    client.global.set("jwt_token", response.body.token);
+    console.log("JWT Token:", client.global.get("jwt_token"));
+%}

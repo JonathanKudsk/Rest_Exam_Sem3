@@ -1,0 +1,95 @@
+### ============================================
+### RECIPE ENDPOINTS
+### ============================================
+
+### Get all recipes (public - no auth required)
+GET {{url}}/recipes
+
+### Get all recipes by category (public - no auth required)
+GET {{url}}/recipes?category=BREAKFAST
+
+### Get recipe by ID (public - no auth required)
+GET {{url}}/recipes/1
+
+### Create a new recipe
+POST {{url}}/recipes
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "name": "Test Recipe",
+  "category": "SNACK",
+  "description": "A test recipe for testing purposes"
+}
+
+### Update recipe
+PUT {{url}}/recipes/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "name": "Updated Recipe Name",
+  "category": "DINNER",
+  "description": "Updated description"
+}
+
+### Delete recipe
+DELETE {{url}}/recipes/1
+Authorization: Bearer {{jwt_token}}
+
+### Add ingredient to recipe
+POST {{url}}/recipes/1/ingredients
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "ingredientId": 5,
+  "quantity": 3,
+  "unit": "pieces",
+  "preparation": "sliced"
+}
+
+### Remove ingredient from recipe
+DELETE {{url}}/recipes/1/ingredients/1
+Authorization: Bearer {{jwt_token}}
+
+### ============================================
+### INGREDIENT ENDPOINTS
+### ============================================
+
+### Get all ingredients (public - no auth required)
+GET {{url}}/ingredients
+
+### Get all ingredients filtered by type (public - no auth required)
+GET {{url}}/ingredients?type=VEGETABLE
+
+### Get ingredient by ID (public - no auth required)
+GET {{url}}/ingredients/1
+
+### Create ingredient (requires auth)
+POST {{url}}/ingredients
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "name": "Tomato",
+  "type": "VEGETABLE",
+  "description": "Fresh red tomato",
+  "slug": "tomato"
+}
+
+### Update ingredient (requires auth)
+PUT {{url}}/ingredients/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "name": "Updated Tomato",
+  "type": "VEGETABLE",
+  "description": "Updated description",
+  "slug": "tomato-updated"
+}
+
+### Delete ingredient (requires auth)
+DELETE {{url}}/ingredients/1
+Authorization: Bearer {{jwt_token}}

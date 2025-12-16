@@ -46,6 +46,9 @@ public class ApplicationConfig {
         app.beforeMatched(accessController::accessHandler);
         app.after(ApplicationConfig::afterRequest);
 
+        app.before(ApplicationConfig::corsHeaders);
+        app.options("/*", ApplicationConfig::corsHeadersOptions);
+
         exceptions(app);
 
         app.start(port);
@@ -68,5 +71,20 @@ public class ApplicationConfig {
         app.exception(DatabaseException.class, ExceptionController::dataBaseExceptionHandler);
         app.exception(UnauthorizedResponse.class, ExceptionController::unauthorizedResponseHandler);
         return app;
+    }
+
+    private static void corsHeaders(Context ctx) {
+        ctx.header("Access-Control-Allow-Origin", "*");
+        ctx.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        ctx.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        ctx.header("Access-Control-Allow-Credentials", "true");
+    }
+
+    private static void corsHeadersOptions(Context ctx) {
+        ctx.header("Access-Control-Allow-Origin", "*");
+        ctx.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        ctx.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        ctx.header("Access-Control-Allow-Credentials", "true");
+        ctx.status(204);
     }
 }

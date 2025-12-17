@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -182,14 +183,66 @@ public class SecurityController implements ISecurityController {
         return (ctx) -> {
             ObjectNode returnObject = objectMapper.createObjectNode();
             try {
-                // Hent rollen fra body. JSON er {"role": "manager"}.
-                // Vi skal hente rollen fra body og brugernavnet fra token
-                String newRole = ctx.bodyAsClass(ObjectNode.class).get("role").asText();
-                UserDTO user = ctx.attribute("user");
-                User updatedUser = securityDAO.addRole(user, newRole);
-                ctx.status(200).json(returnObject.put("msg", "Role " + newRole + " added to user"));
+                // Hent UserDTO og rolle fra body. JSON er {"username": "user", "role": "admin"}.
+                ObjectNode body = ctx.bodyAsClass(ObjectNode.class);
+                String username = body.get("username").asText();
+                String newRole = body.get("role").asText();
+                UserDTO userDTO = new UserDTO(username, Set.of());
+                User updatedUser = securityDAO.addRole(userDTO, newRole);
+                ctx.status(200).json(returnObject.put("msg", "Role " + newRole + " added to user " + username));
             } catch (EntityNotFoundException e) {
-                ctx.status(404).json("{\"msg\": \"User not found\"}");
+                ctx.status(404).json(returnObject.put("msg", "User not found"));
+            } catch (Exception e) {
+                ctx.status(400).json(returnObject.put("msg", e.getMessage()));
+            }
+        };
+    }
+
+    public @NotNull Handler removeRole() {
+        return (ctx) -> {
+            ObjectNode returnObject = objectMapper.createObjectNode();
+            try {
+                // Hent UserDTO og rolle fra body. JSON er {"username": "user", "role": "admin"}.
+                ObjectNode body = ctx.bodyAsClass(ObjectNode.class);
+                String username = body.get("username").asText();
+                String roleToRemove = body.get("role").asText();
+                UserDTO userDTO = new UserDTO(username, Set.of());
+                
+                User updatedUser = securityDAO.removeRole(userDTO.getUsername(), roleToRemove);
+                ctx.status(200).json(returnObject.put("msg", "Role " + roleToRemove + " removed from user " + username));
+            } catch (EntityNotFoundException e) {
+                ctx.status(404).json(returnObject.put("msg", "User not found"));
+            } catch (Exception e) {
+                ctx.status(400).json(returnObject.put("msg", e.getMessage()));
+            }
+        };
+    }
+
+    public @NotNull Handler deleteUser() {
+        return (ctx) -> {
+            ObjectNode returnObject = objectMapper.createObjectNode();
+            try {
+                // Hent UserDTO fra body. JSON er {"username": "john"}.
+                UserDTO userDTO = ctx.bodyAsClass(UserDTO.class);
+                
+                securityDAO.deleteUser(userDTO.getUsername());
+                ctx.status(200).json(returnObject.put("msg", "User " + userDTO.getUsername() + " deleted successfully"));
+            } catch (EntityNotFoundException e) {
+                ctx.status(404).json(returnObject.put("msg", "User not found"));
+            } catch (Exception e) {
+                ctx.status(400).json(returnObject.put("msg", e.getMessage()));
+            }
+        };
+    }
+
+    public @NotNull Handler getAllUsers() {
+        return (ctx) -> {
+            ObjectNode returnObject = objectMapper.createObjectNode();
+            try {
+                List<UserDTO> users = securityDAO.getAllUsers();
+                ctx.status(200).json(users);
+            } catch (Exception e) {
+                ctx.status(500).json(returnObject.put("msg", e.getMessage()));
             }
         };
     }

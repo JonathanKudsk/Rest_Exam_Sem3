@@ -10,7 +10,9 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.TypedQuery;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 
@@ -80,8 +82,62 @@ public class SecurityDAO implements ISecurityDAO {
                     em.persist(role);
                 }
                 user.addRole(role);
+                em.merge(user);
             em.getTransaction().commit();
             return user;
+        }
+    }
+
+    @Override
+    public User removeRole(String username, String roleToRemove) {
+        try (EntityManager em = getEntityManager()) {
+            User user = em.find(User.class, username);
+            if (user == null)
+                throw new EntityNotFoundException("No user found with username: " + username);
+            em.getTransaction().begin();
+            // Force roles til at blive hentet fra database (lazy loading)
+            user.getRoles().size();
+            Role role = em.find(Role.class, roleToRemove);
+            if (role != null) {
+                user.removeRole(roleToRemove);
+                em.merge(role);
+            }
+            em.merge(user);
+            em.getTransaction().commit();
+            return user;
+        }
+    }
+
+    @Override
+    public void deleteUser(String username) {
+        try (EntityManager em = getEntityManager()) {
+            User user = em.find(User.class, username);
+            if (user == null)
+                throw new EntityNotFoundException("No user found with username: " + username);
+            em.getTransaction().begin();
+            // Force roles til at blive hentet fra database (lazy loading)
+            user.getRoles().size();
+            // Fjern brugeren fra alle roller først
+            user.getRoles().forEach(role -> role.getUsers().remove(user));
+            em.remove(user);
+            em.getTransaction().commit();
+        }
+    }
+
+    @Override
+    public List<UserDTO> getAllUsers() {
+        try (EntityManager em = getEntityManager()) {
+            TypedQuery<User> query = em.createQuery("SELECT u FROM User u", User.class);
+            List<User> users = query.getResultList();
+            return users.stream()
+                    .map(user -> {
+                        // Force roles til at blive hentet fra database (lazy loading)
+                        user.getRoles().size();
+                        return new UserDTO(user.getUsername(), user.getRoles().stream()
+                                .map(Role::getRoleName)
+                                .collect(Collectors.toSet()));
+                    })
+                    .collect(Collectors.toList());
         }
     }
 }

@@ -23,7 +23,10 @@ public class SecurityRoutes {
                 get("/test", ctx->ctx.json(jsonMapper.createObjectNode().put("msg",  "Hello World!")), Role.ANYONE);
                 post("/register", securityController.register(), Role.ANYONE);
                 post("/login", securityController.login(), Role.ANYONE);
-                post("/user/role", securityController.addRole(), Role.USER);
+                get("/users", securityController.getAllUsers(), Role.ADMIN);
+                post("/user/role", securityController.addRole(), Role.ADMIN);
+                delete("/user/role", securityController.removeRole(), Role.ADMIN);
+                delete("/user", securityController.deleteUser(), Role.ADMIN);
             });
         };
     }

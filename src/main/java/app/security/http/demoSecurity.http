@@ -46,3 +46,116 @@ POST {{url}}/auth/login
     client.global.set("jwt_token", response.body.token);
     console.log("JWT Token:", client.global.get("jwt_token"));
 %}
+
+### ============================================
+### Tests for removeRole and deleteUser
+### ============================================
+
+### Create a test user to delete (for testing purposes)
+POST {{url}}/auth/register
+
+{
+    "username": "testuser",
+    "password": "test123"
+}
+
+### Create another test user (for testing removeRole from different user)
+POST {{url}}/auth/register
+
+{
+    "username": "testadmin",
+    "password": "test123"
+}
+
+
+### Add a role to current user (manager role) so we can test removing it
+POST {{url}}/auth/user/role
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "role": "manager"
+}
+
+### Add manager role to testuser so we can test removing it
+POST {{url}}/auth/user/role
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "role": "manager"
+}
+
+### Test: Remove role from testuser (admin can remove role from any user)
+DELETE {{url}}/auth/user/role
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "username": "testuser",
+    "role": "manager"
+}
+
+### Test: Remove role from current user (admin can remove role from themselves too)
+DELETE {{url}}/auth/user/role
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "username": "user",
+    "role": "manager"
+}
+
+### Test: Try to remove a role that doesn't exist (should handle gracefully)
+DELETE {{url}}/auth/user/role
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "username": "testuser",
+    "role": "nonexistentrole"
+}
+
+### Test: Delete testuser
+DELETE {{url}}/auth/user
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "username": "testuser"
+}
+
+### Test: Try to delete a user that doesn't exist (should return 404)
+DELETE {{url}}/auth/user
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "username": "nonexistentuser"
+}
+
+### Test: Delete yourself (admin can delete their own account)
+DELETE {{url}}/auth/user
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "username": "user"
+}
+
+### Verify testuser is deleted - try to login (should fail)
+POST {{url}}/auth/login
+
+{
+    "username": "testuser",
+    "password": "test123"
+}
+
+### Clean up: Delete testadmin
+DELETE {{url}}/auth/user
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "username": "testadmin"
+}

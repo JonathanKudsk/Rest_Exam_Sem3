@@ -19,6 +19,12 @@ public class UserPopulator {
         securityDAO.createUser(username1, password1);
         securityDAO.addRole(u1, "admin");
 
-        return List.of(u1);
+        String username2 = "U";
+        String password2 = "U1";
+        UserDTO u2 = new UserDTO(username2, password2);
+        securityDAO.createUser(username2, password2);
+        securityDAO.addRole(u1, "user");
+
+        return List.of(u1, u2);
     }
 }

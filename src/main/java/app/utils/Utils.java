@@ -25,6 +25,9 @@ public class Utils {
         // HUSK: Build med Maven først. Læs property filen hvis ikke deployed (ellers læs system variabler)
         // Læs fra ressources/config.properties eller fra pom.xml afhængigt af resourceName
         try (InputStream is = Utils.class.getClassLoader().getResourceAsStream(resourceName)) {
+            if (is == null) {
+                throw new ApiException(500, String.format("Resource %s not found. Did you remember to build the project with MAVEN?", resourceName));
+            }
             Properties prop = new Properties();
             prop.load(is);
 

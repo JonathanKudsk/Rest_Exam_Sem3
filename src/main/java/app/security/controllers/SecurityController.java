@@ -151,9 +151,18 @@ public class SecurityController implements ISecurityController {
                 TOKEN_EXPIRE_TIME = System.getenv("TOKEN_EXPIRE_TIME");
                 SECRET_KEY = System.getenv("SECRET_KEY");
             } else {
-                ISSUER = Utils.getPropertyValue("ISSUER", "config.properties");
-                TOKEN_EXPIRE_TIME = Utils.getPropertyValue("TOKEN_EXPIRE_TIME", "config.properties");
-                SECRET_KEY = Utils.getPropertyValue("SECRET_KEY", "config.properties");
+                // Try to read from config.properties, fallback to defaults for tests
+                try {
+                    ISSUER = Utils.getPropertyValue("ISSUER", "config.properties");
+                    TOKEN_EXPIRE_TIME = Utils.getPropertyValue("TOKEN_EXPIRE_TIME", "config.properties");
+                    SECRET_KEY = Utils.getPropertyValue("SECRET_KEY", "config.properties");
+                } catch (Exception e) {
+                    // Fallback to default values for CI/tests when config.properties is not available
+                    logger.warn("Could not read config.properties, using default values for tests");
+                    ISSUER = "test-issuer";
+                    TOKEN_EXPIRE_TIME = "1800000"; // 30 minutes
+                    SECRET_KEY = "test-secret-key-for-ci";
+                }
             }
             return tokenSecurity.createToken(user, ISSUER, TOKEN_EXPIRE_TIME, SECRET_KEY);
         } catch (Exception e) {
@@ -165,7 +174,20 @@ public class SecurityController implements ISecurityController {
     @Override
     public UserDTO verifyToken(String token) {
         boolean IS_DEPLOYED = (System.getenv("DEPLOYED") != null);
-        String SECRET = IS_DEPLOYED ? System.getenv("SECRET_KEY") : Utils.getPropertyValue("SECRET_KEY", "config.properties");
+        String SECRET;
+        
+        if (IS_DEPLOYED) {
+            SECRET = System.getenv("SECRET_KEY");
+        } else {
+            // Try to read from config.properties, fallback to default for tests
+            try {
+                SECRET = Utils.getPropertyValue("SECRET_KEY", "config.properties");
+            } catch (Exception e) {
+                // Fallback to default value for CI/tests when config.properties is not available
+                logger.warn("Could not read SECRET_KEY from config.properties, using default value for tests");
+                SECRET = "test-secret-key-for-ci";
+            }
+        }
 
         try {
             if (tokenSecurity.tokenIsValid(token, SECRET) && tokenSecurity.tokenNotExpired(token)) {

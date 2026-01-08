@@ -36,4 +36,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/Rest_Exam_Sem3:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/recipe_api:latest

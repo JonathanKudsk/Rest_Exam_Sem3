@@ -54,8 +54,8 @@ public class SecurityController implements ISecurityController {
         return (ctx) -> {
             // Opret ObjectNode for at sende JSON beskeder tilbage til klienten
             ObjectNode returnObject = objectMapper.createObjectNode();
+            UserDTO user = ctx.bodyAsClass(UserDTO.class);
             try {
-                UserDTO user = ctx.bodyAsClass(UserDTO.class);
                 UserDTO verifiedUser = securityDAO.getVerifiedUser(user.getUsername(), user.getPassword());
                 String token = createToken(verifiedUser);
 
@@ -66,7 +66,7 @@ public class SecurityController implements ISecurityController {
             } catch (EntityNotFoundException | ValidationException e) {
                 ctx.status(401);
                 System.out.println(e.getMessage());
-                ctx.json(returnObject.put("msg", e.getMessage()));
+                ctx.json(returnObject.put("msg", "Login failed. check username and password."));
             }
         };
     }

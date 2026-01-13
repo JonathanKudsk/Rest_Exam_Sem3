@@ -38,10 +38,10 @@ public class ApplicationConfig {
     public static Javalin startServer(int port) {
         Javalin app = Javalin.create(ApplicationConfig::configuration);
 
-        try (EntityManager em = emf.createEntityManager()) {
-            UserPopulator.populate(em);
-            RecipePopulator.populate(em);
-        }
+//        try (EntityManager em = emf.createEntityManager()) {
+//            UserPopulator.populate(em);
+//            RecipePopulator.populate(em);
+//        }
 
         app.beforeMatched(accessController::accessHandler);
         app.after(ApplicationConfig::afterRequest);
